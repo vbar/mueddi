@@ -7,6 +7,9 @@ setup:
 dist:
 	python3 setup.py sdist bdist_wheel
 
+upload:
+	twine upload dist/*
+
 .PHONY: test
 test:
 	python3 -m unittest mueddit.tests.test
