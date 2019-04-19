@@ -1,0 +1,4 @@
+Testing scripts in this directory require the mueddit package
+(or at least some mueddi API) to be installed, possibly in
+a virtual environment.
+
