@@ -32,21 +32,5 @@ def make_setup(cython_modules):
 
                     g.write("ext_modules = cythonize(%s),\n" % cythonize_arg)
 
-def make_top(with_cython):
-    import_rx = None
-    if with_cython:
-        import_rx = re.compile("import")
-
-    with open("mueddit/mueddi.in") as f:
-        with open("mueddit/mueddi.py", "w") as g:
-            for ln in f:
-                if import_rx and import_rx.match(ln):
-                    g.write("import pyximport; pyximport.install()\n")
-
-                g.write(ln)
-
 if __name__ == '__main__':
-    cython_modules = sys.argv[1:]
-    make_setup(cython_modules)
-    # pyximport is unnecessary with setup support
-    # make_top(len(cython_modules))
+    make_setup(sys.argv[1:])
