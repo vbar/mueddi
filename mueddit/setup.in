@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mueddi-vbar",
-    version="0.0.1",
+    version="0.0.2",
     author="Vaclav Barta",
     author_email="pyauth@mangrove.cz",
     description="MUlti-word EDit DIstance",

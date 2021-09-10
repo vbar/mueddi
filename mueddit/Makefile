@@ -1,6 +1,12 @@
 .PHONY: setup
 setup:
 	python3 make_source.py struct_hash dawg leven
+	cp ../LICENSE .
+	cp ../README.md .
+
+.PHONY: develop
+develop:
+	python3 setup.py develop --user
 
 # doesn't work in virtual environment - not clear why...
 .PHONY: dist
@@ -17,4 +23,4 @@ test:
 # needs root access to install outside virtual environment
 .PHONY: install
 install:
-	python3 setup.py install --user
+	python3 setup.py install
