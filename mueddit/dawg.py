@@ -46,6 +46,21 @@ class DawgState:
 
         return self.h
 
+    def __str__(self):
+        s = 't' if self.final else 'f'
+        s += ' {'
+        delim = ' '
+        for k, v in self.children.items():
+            s += delim
+            s += '\''
+            s += k
+            s += '\': '
+            s += str(v)
+            delim = ', '
+
+        s += ' }'
+        return s;
+
     def keys(self):
         if self.sorted_keys is None:
            self.sorted_keys = sorted(self.children.keys())
@@ -79,6 +94,9 @@ class Dawg:
 
     def __init__(self, root_final):
         self.root = DawgState(root_final)
+
+    def __str__(self):
+        return "Dawg: %s" % self.root
 
     def accepts(self, w):
         state = self.root
