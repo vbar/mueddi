@@ -17,4 +17,4 @@ test:
 # needs root access to install outside virtual environment
 .PHONY: install
 install:
-	python3 setup.py install
+	python3 setup.py install --user
