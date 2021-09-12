@@ -233,7 +233,7 @@ void Builder::add_suffix(const DawgStateRef &state, const std::string &suffix)
     }
 }
 
-Dawg make_dawg(TWords &words)
+Dawg make_dawg_impl(TWords &words)
 {
     // UTF-8 can be compared per-character, but for the ordering to be
     // by Unicode codepoints (which this program requires), the

@@ -136,12 +136,6 @@ std::string normalize_existing_path(const std::string &raw)
     return std::string(res);
 }
 
-Dawg make_dawg_ex(const std::set<std::string> &s)
-{
-    TWords v(s.begin(), s.end());
-    return make_dawg(v);
-}
-
 void test_independent(const std::string &seen, size_t n, const std::set<std::string> &dictionary, const Dawg &dawg, CsvWriter &writer)
 {
     std::set<std::string> external;
@@ -231,7 +225,7 @@ int main(int argc, char *argv[])
         std::set<std::string> dictionary = make_test_dict(input_path);
         std::set<std::string> dd = dictionary;
         // actually only needed in single mode
-        Dawg dawg = make_dawg_ex(dd);
+        Dawg dawg = make_dawg(dd);
 
         if (!std::filesystem::exists(result_path)) {
             std::ofstream stream(result_path);
@@ -257,7 +251,7 @@ int main(int argc, char *argv[])
                         dd.insert(last_word);
                     }
 
-                    dawg = make_dawg_ex(dd);
+                    dawg = make_dawg(dd);
                     last_word = tword;
                 }
 
@@ -317,7 +311,7 @@ int main(int argc, char *argv[])
                         dd.insert(last_word);
                     }
 
-                    dawg = make_dawg_ex(dd);
+                    dawg = make_dawg(dd);
                     last_word = tword;
                 }
 

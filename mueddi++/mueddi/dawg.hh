@@ -96,7 +96,20 @@ inline std::ostream &operator<<(std::ostream &os, const Dawg &dawg)
     return os;
 }
 
-Dawg make_dawg(TWords &words); // param modified in-place
+Dawg make_dawg_impl(TWords &words); // param modified in-place
+
+template<typename I>
+Dawg make_dawg(I b, I e)
+{
+    TWords w(b, e);
+    return make_dawg_impl(w);
+}
+
+template<typename R>
+Dawg make_dawg(const R &c)
+{
+    return make_dawg(std::begin(c), std::end(c));
+}
 
 inline DawgState::DawgState(bool finl):
     finl(finl)
