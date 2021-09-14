@@ -3,6 +3,6 @@
 
 #include <stddef.h>
 
-size_t levenshtein_distance(const char* s, size_t n, const char* t, size_t m);
+size_t levenshtein_distance(const unsigned char *s, const unsigned char *t);
 
 #endif

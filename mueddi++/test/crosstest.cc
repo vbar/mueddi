@@ -140,8 +140,7 @@ void test_independent(const std::string &seen, size_t n, const std::set<std::str
 {
     std::set<std::string> external;
     for (const std::string &correct: dictionary) {
-        // both seen and dictionary are ASCII-only
-        if (levenshtein_distance(seen.c_str(), seen.length(), correct.c_str(), correct.length()) <= n) {
+        if (levenshtein_distance(reinterpret_cast<const unsigned char *>(seen.c_str()), reinterpret_cast<const unsigned char *>(correct.c_str())) <= n) {
             external.insert(correct);
         }
     }

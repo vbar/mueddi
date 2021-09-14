@@ -10,10 +10,9 @@ def make_test_dict(input_path):
     with open(input_path) as f:
         # this may combine adjacent words, but that can be construed
         # as a feature, making the dictionary more interesting...
-        unword_rx = re.compile("\\W")
+        unword_rx = re.compile("[\r\n\t .?!,;:\"'()\\[\\]{}&*#$@_]")
         for ln in f:
-            for raw in ln.split():
-                word = unword_rx.sub("", raw.strip())
+            for word in unword_rx.split(ln):
                 if word:
                     dictionary.add(word)
 

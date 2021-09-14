@@ -1,9 +1,13 @@
 #include "levenshtein.hh"
+#include "decoder.hh"
 
 #include <algorithm>
 #include <memory>
 #include <assert.h>
 #include <string.h>
+
+using mueddi::decode;
+using mueddi::get_code_point_count;
 
 class Matrix
 {
@@ -54,8 +58,19 @@ inline size_t min3(size_t a, size_t b, size_t c) {
     return std::min(a, std::min(b, c));
 }
 
-size_t levenshtein_distance(const char *s, size_t m, const char *t, size_t n)
+size_t levenshtein_distance(const unsigned char *s, const unsigned char *t)
 {
+    size_t m = get_code_point_count(s);
+    size_t n = get_code_point_count(t);
+    if (m < n) {
+        std::swap(s, t);
+        std::swap(m, n);
+    }
+
+    if (!n) {
+        return m;
+    }
+
     Matrix d(m + 1, n + 1);
 
     for (size_t i = 0; i <= m; i++) {
@@ -66,11 +81,36 @@ size_t levenshtein_distance(const char *s, size_t m, const char *t, size_t n)
         d.at(0, j) = j;
     }
 
-    for (size_t i = 1; i <= m; i++)
-    {
+    std::unique_ptr<uint32_t[]> cache(new uint32_t[n]);
+    uint32_t *w = cache.get();
+
+    uint32_t state = UTF8_ACCEPT;
+    uint32_t codepoint = 0xdeadbeef;
+    size_t ci = 0;
+    while (*t) {
+        while (decode(&state, &codepoint, *t)) {
+            ++t;
+        }
+
+        assert(state == UTF8_ACCEPT);
+
+        w[ci++] = codepoint;
+        ++t;
+    }
+
+    assert(ci == n);
+
+    size_t i = 1;
+    while (*s) {
+        while (decode(&state, &codepoint, *s)) {
+            ++s;
+        }
+
+        assert(state == UTF8_ACCEPT);
+
         for (size_t j = 1; j <= n; j++)
         {
-            if (s[i - 1] == t[j - 1])
+            if (codepoint == w[j - 1])
             {
                 d.at(i, j) = d.at(i - 1, j - 1);
             }
@@ -79,7 +119,12 @@ size_t levenshtein_distance(const char *s, size_t m, const char *t, size_t n)
                 d.at(i, j) = 1 + min3(d.at(i - 1, j), d.at(i, j - 1), d.at(i - 1, j - 1));
             }
         }
+
+        ++s;
+        ++i;
     }
+
+    assert(i == m + 1);
 
     return d.at(m, n);
 }

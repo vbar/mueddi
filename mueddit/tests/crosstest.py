@@ -3,6 +3,7 @@
 from mueddit import make_dawg, Iterator
 from ingest import make_test_dict
 import argparse
+import copy
 import csv
 from Levenshtein import distance
 import os.path
@@ -61,22 +62,29 @@ def main():
 
     dictionary = make_test_dict(input_path)
 
-    dd = None
-    dawg = None
-    if single_mode:
-        dd = dictionary
-        dawg = make_dawg(dd)
+    dd = copy.copy(dictionary) if single_mode else dictionary
+    dawg = make_dawg(dd) if single_mode else None
 
     if not os.path.isfile(result_path):
         with open(result_path, 'w', newline='') as f:
             writer = csv.writer(f, delimiter='\t')
             writer.writerow([ input_path, str(n), int(single_mode)])
+
+            last_word = None
+            first = True
             for tword in sorted(dictionary):
                 print("%s..." % tword)
 
                 if not single_mode:
-                    dd = dictionary - { tword }
+                    dd.remove(tword)
+
+                    if (first):
+                        first = False
+                    else:
+                        dd.add(last_word)
+
                     dawg = make_dawg(dd)
+                    last_word = tword
 
                 test_independent(tword, n, dd, dawg, writer)
     else:
@@ -89,11 +97,21 @@ def main():
             if (first_row[0] != input_path) or (int(first_row[1]) != n) or (int(first_row[2]) != int(single_mode)):
                 raise Exception("inputs changed")
 
+            last_word = None
+            first = True
             for tword in sorted(dictionary):
                 print("%s..." % tword)
 
                 if not single_mode:
-                    dawg = make_dawg(dictionary - { tword })
+                    dd.remove(tword)
+
+                    if (first):
+                        first = False
+                    else:
+                        dd.add(last_word)
+
+                    dawg = make_dawg(dd)
+                    last_word = tword
 
                 test_repeat(tword, n, dawg, reader)
 
