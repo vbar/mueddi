@@ -200,7 +200,7 @@ void Builder::replace_or_register(DawgStateRef state)
     }
 
     auto it = registr.find(child);
-    if (it == registr.end()) {
+    if (it != registr.end()) {
         state->set_last_child(*it);
     } else {
         registr.insert(child);
