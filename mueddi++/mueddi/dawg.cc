@@ -195,15 +195,17 @@ void Builder::replace_or_register(DawgStateRef state)
 {
     assert(state.get());
     DawgStateRef child = state->last_child();
-    if (!!child && child->has_children()) {
-        replace_or_register(child);
-    }
+    if (child.get()) {
+        if (child->has_children()) {
+            replace_or_register(child);
+        }
 
-    auto it = registr.find(child);
-    if (it != registr.end()) {
-        state->set_last_child(*it);
-    } else {
-        registr.insert(child);
+        auto it = registr.find(child);
+        if (it != registr.end()) {
+            state->set_last_child(*it);
+        } else {
+            registr.insert(child);
+        }
     }
 }
 

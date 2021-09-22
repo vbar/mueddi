@@ -136,14 +136,15 @@ class Builder:
     def replace_or_register(self, state):
         assert state
         child = state.last_child()
-        if child and child.has_children():
-            self.replace_or_register(child)
+        if child:
+            if child.has_children():
+                self.replace_or_register(child)
 
-        q = self.register.get(child)
-        if q:
-            state.set_last_child(q)
-        else:
-            self.register[child] = child
+            q = self.register.get(child)
+            if q:
+                state.set_last_child(q)
+            else:
+                self.register[child] = child
 
     def add_suffix(self, state, suffix):
         assert state
