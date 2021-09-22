@@ -50,7 +50,7 @@ public:
         Initializer();
     };
 
-    uint32_t bits;
+    const uint32_t bits;
     const size_t size;
 
     CharVec(uint32_t b, size_t s);
