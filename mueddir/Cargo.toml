@@ -1,0 +1,15 @@
+[package]
+name = "mueddir"
+version = "0.1.0"
+edition = "2018"
+
+[lib]
+name = "mueddi"
+path = "src/lib.rs"
+
+[[bin]]
+name = "dawg_test"
+path = "src/dawg_test/bin/main.rs"
+
+[dependencies]
+superslice = "1"
