@@ -26,7 +26,6 @@ using TQueue = std::queue<QueueItem>;
 class IteratorPayload
 {
 public:
-    Dawg dawg;
     Facade facade;
     TQueue queue;
     std::string current;
@@ -119,22 +118,17 @@ void InputIterator::advance()
                 size_t l = utf8_encode(buf, x);
                 assert(l);
                 v1.append(buf, l);
-
-                DawgStateRef q1 = item.dawg_state->get_child(x);
-                assert(q1.get());
-
-                p->queue.emplace(v1, q1, mp);
+                p->queue.emplace(v1, it->second, mp);
             }
         }
     }
 }
 
 IteratorPayload::IteratorPayload(const std::string &seen, size_t n, const Dawg &dawg):
-    dawg(dawg),
     facade(seen, n),
     valid(false)
 {
-    queue.emplace(std::string(), this->dawg.get_root(), Facade::initial_state());
+    queue.emplace(std::string(), dawg.get_root(), Facade::initial_state());
 }
 
 }
