@@ -22,7 +22,7 @@ struct IteratorPayload {
 }
 
 #[derive(Clone)]
-struct ResultIterator {
+pub struct ResultIterator {
     payload: Rc<RefCell<IteratorPayload>>
 }
 
@@ -73,7 +73,7 @@ impl IteratorPayload {
 }
 
 impl ResultIterator {
-    fn new(seen: &str, n: usize, dawg: &dawg::Dawg, cache: &mut leven::Cache) -> Self {
+    pub fn new(seen: &str, n: usize, dawg: &dawg::Dawg, cache: &mut leven::Cache) -> Self {
         let mut ip = IteratorPayload::new(seen, n, dawg, cache);
         ip.advance();
 

@@ -2,6 +2,7 @@
 name = "mueddir"
 version = "0.1.0"
 edition = "2018"
+default-run = "crosstest"
 
 [lib]
 name = "mueddi"
@@ -11,5 +12,13 @@ path = "src/lib.rs"
 name = "dawg_test"
 path = "src/dawg_test/bin/main.rs"
 
+[[bin]]
+name = "crosstest"
+path = "src/crosstest/bin/main.rs"
+
 [dependencies]
 superslice = "1"
+argparse = "0.2.2"
+csv = "1.1"
+levenshtein = "1"
+regex = "1"
