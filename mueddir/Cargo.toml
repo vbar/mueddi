@@ -3,6 +3,8 @@ name = "mueddir"
 version = "0.1.0"
 edition = "2018"
 default-run = "crosstest"
+description = "MUlti-word EDit DIstance"
+license = "MIT"
 
 [lib]
 name = "mueddi"
