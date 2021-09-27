@@ -11,7 +11,7 @@ use std::rc::Rc;
 pub mod dawg;
 pub mod leven;
 
-pub use self::dawg::{Dawg, make_dawg_impl};
+pub use self::dawg::{Dawg, make_dawg_impl, Words};
 pub use self::leven::Cache;
 
 #[derive(Clone)]
