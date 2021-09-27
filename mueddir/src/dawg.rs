@@ -1,3 +1,9 @@
+//! # Deterministic acyclic finite state automaton for word sets
+//!
+//! AKA Directed acyclic word graph. The algorithm is from Incremental
+//! Construction of Minimal Acyclic Finite-State Automata by Jan
+//! Daciuk, Stoyan Mihov, Bruce W. Watson and Richard E. Watson.
+
 use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
@@ -70,7 +76,7 @@ impl DawgState {
         }
     }
 
-    pub fn compare(&self, other: &Self) -> std::cmp::Ordering {
+    fn compare(&self, other: &Self) -> std::cmp::Ordering {
         if self.finl != other.finl {
             if self.finl {
                 return Ordering::Greater;

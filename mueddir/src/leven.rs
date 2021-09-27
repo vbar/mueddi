@@ -1,3 +1,10 @@
+//! # Levenshtein-automata imitation model
+//!
+//! This module probably won't make any sense without reading the
+//! paper Fast String Correction with Levenshtein-Automata by Klaus
+//! U. Schulz and Stoyan Mihov (called "the paper" below), whose
+//! basics it tries to implement.
+
 use std::cell::{Cell, RefCell};
 use std::cmp;
 use std::collections::{BTreeMap, HashMap};
