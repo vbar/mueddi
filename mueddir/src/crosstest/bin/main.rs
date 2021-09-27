@@ -8,9 +8,6 @@ use std::io::{Read, Write};
 use std::path::Path;
 use std::process;
 
-use mueddi::dawg;
-use mueddi::leven;
-
 mod ingest {
     use regex::Regex;
     use std::collections::BTreeSet;
@@ -48,7 +45,7 @@ impl fmt::Display for TestError {
 
 impl Error for TestError {}
 
-fn test_independent<W: Write>(seen: &str, n: usize, dictionary: &BTreeSet<String>, dawg: &dawg::Dawg, cache: &mut leven::Cache, writer: &mut csv::Writer<W>) -> Result<(), Box<dyn Error>> {
+fn test_independent<W: Write>(seen: &str, n: usize, dictionary: &BTreeSet<String>, dawg: &mueddi::Dawg, cache: &mut mueddi::Cache, writer: &mut csv::Writer<W>) -> Result<(), Box<dyn Error>> {
     let mut external: HashSet<String> = HashSet::new();
     for correct in dictionary {
         if levenshtein(seen, correct) <= n {
@@ -75,7 +72,7 @@ fn test_independent<W: Write>(seen: &str, n: usize, dictionary: &BTreeSet<String
     }
 }
 
-fn test_repeat<R: Read>(seen: &str, n: usize, dawg: &dawg::Dawg, cache: &mut leven::Cache, records: &mut csv::StringRecordsIter<R>) -> Result<(), Box<dyn Error>> {
+fn test_repeat<R: Read>(seen: &str, n: usize, dawg: &mueddi::Dawg, cache: &mut mueddi::Cache, records: &mut csv::StringRecordsIter<R>) -> Result<(), Box<dyn Error>> {
     let item = match records.next() {
         Some(result) => result,
         None => {
@@ -131,8 +128,8 @@ fn run(n: usize, input: &str, result: &str, single_mode: bool) -> Result<(), Box
     let dictionary = ingest::make_test_dict(&input_path)?;
     let mut dd = dictionary.clone();
     let mut words: Vec<String> = dictionary.iter().cloned().collect();
-    let mut dawg = dawg::make_dawg_impl(&mut words);
-    let mut cache = leven::Cache::new();
+    let mut dawg = mueddi::make_dawg_impl(&mut words);
+    let mut cache = mueddi::Cache::new();
 
     if !result_path.exists() {
         let mut writer = csv::WriterBuilder::new()
@@ -161,7 +158,7 @@ fn run(n: usize, input: &str, result: &str, single_mode: bool) -> Result<(), Box
                 }
 
                 let mut other_words: Vec<String> = dd.iter().cloned().collect();
-                dawg = dawg::make_dawg_impl(&mut other_words);
+                dawg = mueddi::make_dawg_impl(&mut other_words);
                 last_word = tword.to_string();
             }
 
@@ -237,7 +234,7 @@ fn run(n: usize, input: &str, result: &str, single_mode: bool) -> Result<(), Box
                 }
 
                 let mut other_words: Vec<String> = dd.iter().cloned().collect();
-                dawg = dawg::make_dawg_impl(&mut other_words);
+                dawg = mueddi::make_dawg_impl(&mut other_words);
                 last_word = tword.to_string();
             }
 

@@ -11,6 +11,9 @@ use std::rc::Rc;
 pub mod dawg;
 pub mod leven;
 
+pub use self::dawg::{Dawg, make_dawg_impl};
+pub use self::leven::Cache;
+
 #[derive(Clone)]
 struct QueueItem {
     candidate: String,
@@ -32,14 +35,11 @@ struct IteratorPayload {
 /// # Example
 ///
 /// ```
-/// use mueddi::dawg;
-/// use mueddi::leven;
-///
-/// let mut cache = leven::Cache::new();
+/// let mut cache = mueddi::Cache::new();
 /// let data = vec![ "this", "that", "other" ];
 ///
 /// let mut v: Vec<String> = data.iter().map(|s| String::from(*s)).collect();
-/// let dawg = dawg::make_dawg_impl(&mut v);
+/// let dawg = mueddi::make_dawg_impl(&mut v);
 /// let it = mueddi::ResultIterator::new("the", 2, &dawg, &mut cache);
 /// for s in it {
 ///     println!("{}", s);

@@ -2,12 +2,10 @@ use std::collections::HashSet;
 use std::env;
 use std::iter::FromIterator;
 
-use mueddi::dawg;
-
 fn main() {
     let mut it = env::args();
     it.next();
-    let mut words: dawg::Words = it.collect();
+    let mut words: mueddi::Words = it.collect();
     if words.is_empty() {
         panic!("no words");
     }
@@ -17,7 +15,7 @@ fn main() {
         panic!("duplicate words");
     }
 
-    let dawg = dawg::make_dawg_impl(&mut words);
+    let dawg = mueddi::make_dawg_impl(&mut words);
 
     let mut neg = String::from("~");
     for w in words {
