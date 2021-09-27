@@ -21,6 +21,24 @@ struct IteratorPayload {
     valid: bool
 }
 
+/// Standard iterator interface.
+///
+/// # Example
+///
+/// ```
+/// use mueddi::dawg;
+/// use mueddi::leven;
+///
+/// let mut cache = leven::Cache::new();
+/// let data = vec![ "this", "that", "other" ];
+///
+/// let mut v: Vec<String> = data.iter().map(|s| String::from(*s)).collect();
+/// let dawg = dawg::make_dawg_impl(&mut v);
+/// let it = mueddi::ResultIterator::new("the", 2, &dawg, &mut cache);
+/// for s in it {
+///     println!("{}", s);
+/// }
+/// ```
 #[derive(Clone)]
 pub struct ResultIterator {
     payload: Rc<RefCell<IteratorPayload>>
@@ -210,7 +228,7 @@ mod tests {
         }
 
         {
-            let mut it = ResultIterator::new("mutter", 2, &dawg, &mut cache);
+            let it = ResultIterator::new("mutter", 2, &dawg, &mut cache);
             let res: HashSet<String> = it.collect();
 
             assert_eq!(3, res.len());
