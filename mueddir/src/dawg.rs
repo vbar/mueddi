@@ -51,7 +51,7 @@ impl DawgState {
 
     fn get_child(&self, letter: char) -> Option<DawgStateRef> {
         match self.children.get(&letter) {
-            Some(s) => Some(s.clone()),
+            Some(s) => Some(Rc::clone(&s)),
             None => None
         }
     }
@@ -61,7 +61,7 @@ impl DawgState {
             None
         } else {
             let last = self.children.iter().next_back().unwrap().1;
-            Some(last.clone())
+            Some(Rc::clone(&last))
         }
     }
 
@@ -181,11 +181,11 @@ impl Dawg {
     }
 
     pub fn get_root(&self) -> DawgStateRef {
-        self.root.clone()
+        Rc::clone(&(self.root))
     }
 
     pub fn accepts(&self, w: &str) -> bool {
-        let mut state = self.root.clone();
+        let mut state = Rc::clone(&(self.root));
         for ch in w.chars() {
             let child = state.borrow().get_child(ch);
             match child {
@@ -200,8 +200,8 @@ impl Dawg {
 
     fn track_prefix(&self, word: &str) -> ( String, DawgStateRef ) {
         let mut prefix = String::new();
-        let mut next_state = self.root.clone();
-        let mut prev_state = next_state.clone();
+        let mut next_state = Rc::clone(&(self.root));
+        let mut prev_state = Rc::clone(&next_state);
 
         for ch in word.chars() {
             prev_state = next_state;
@@ -239,7 +239,7 @@ impl Builder {
             self.add_suffix(&last_state, current_suffix);
         }
 
-        let root = self.dawg.root.clone();
+        let root = Rc::clone(&(self.dawg.root));
         self.replace_or_register(&root);
     }
 
@@ -251,7 +251,7 @@ impl Builder {
             }
 
             if let Some(q) = self.register.get(&child) {
-                state.borrow_mut().set_last_child(q.clone());
+                state.borrow_mut().set_last_child(Rc::clone(&q));
             } else {
                 self.register.insert(child);
             }
@@ -259,7 +259,7 @@ impl Builder {
     }
 
     fn add_suffix(&mut self, state: &DawgStateRef, suffix: &str) {
-        let mut prev_state = state.clone();
+        let mut prev_state = Rc::clone(state);
         let mut iter = suffix.chars().peekable();
         while let Some(ch) = iter.next() {
             let finl = match iter.peek() {
@@ -268,8 +268,8 @@ impl Builder {
             };
 
             let next_state = Rc::new(RefCell::new(DawgState::new(finl)));
-            prev_state.borrow_mut().add_child(ch, next_state.clone());
-            self.register.insert(next_state.clone());
+            prev_state.borrow_mut().add_child(ch, Rc::clone(&next_state));
+            self.register.insert(Rc::clone(&next_state));
             prev_state = next_state;
         }
     }

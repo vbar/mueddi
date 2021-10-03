@@ -86,7 +86,7 @@ impl IteratorPayload {
                     if let Some(mp) = self.facade.delta(&(item.leven_state), *x) {
                         let mut v1: String = item.candidate.clone();
                         v1.push(*x);
-                        self.queue.push_back(QueueItem::new(v1, q1.clone(), mp));
+                        self.queue.push_back(QueueItem::new(v1, Rc::clone(q1), mp));
                     }
                 }
             } else {
