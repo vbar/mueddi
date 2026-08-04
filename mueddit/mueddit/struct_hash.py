@@ -4,9 +4,13 @@ Specialized for the needs of Deterministic acyclic finite state
 automata and Levenshtein automata in this package.
 """
 
+from __future__ import annotations
+
+from typing import Any
+
 MOD_ADLER = 65521
 
-def hash_list(lst):
+def hash_list(lst: list[Any]) -> int:
     """Hash (sorted) list, delegating to its members.
 
     Not suitable for general iterables (like set) because it expects
@@ -20,7 +24,7 @@ def hash_list(lst):
 
     return (b << 16) | a;
 
-def hash_dict(d):
+def hash_dict(d: dict[str, Any]) -> int:
     """Hash dictionary with single-character keys and object values.
 
     Values are hashed by id, i.e. for equality using the is operator.

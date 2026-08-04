@@ -6,8 +6,11 @@ and Stoyan Mihov (called "the paper" below), whose basics it tries to
 implement.
 """
 
+from __future__ import annotations
+
 from mueddit.struct_hash import hash_list
 from bisect import bisect_left, insort_left
+from typing import Iterator
 import logging
 
 # if somebody wants n > 15, they'll need a custom implementation
@@ -19,31 +22,31 @@ log = logging.getLogger('mueddi')
 class RelPos:
     """Position ("i^#e"), except it's relative to some outside i."""
 
-    def __init__(self, o, e):
+    def __init__(self, o: int, e: int) -> None:
         assert (o >= 0) and (e >= 0)
         self.offset = o
         self.edit = e
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         assert isinstance(other, RelPos)
 
         return (self.edit == other.edit) and (self.offset == other.offset)
 
-    def __lt__(self, other):
+    def __lt__(self, other: RelPos) -> bool:
         assert isinstance(other, RelPos)
 
         return (self.edit < other.edit) or ((self.edit == other.edit) and (self.offset < other.offset))
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return (MAX_LEN + 1) * self.offset + self.edit
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "+%d#%d" % (self.offset, self.edit)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "'%s'" % self.__str__()
 
-    def subsumes(self, other):
+    def subsumes(self, other: RelPos) -> bool:
         """Subsumption relation from the paper.
 
         Works even for relative positions, as long as they're relative
@@ -53,15 +56,15 @@ class RelPos:
         r = other.edit - self.edit
         return False if r <= 0 else abs(other.offset - self.offset) <= r
 
-    def subtract(self, di):
+    def subtract(self, di: int) -> RelPos:
         """Returns this position for a higher base."""
         assert (di > 0) and (self.offset >= di)
         return RelPos(self.offset - di, self.edit)
 
 # conceptually a class attribute of CharVec
-power_mask = []
+power_mask: list[int] = []
 
-def init_power_mask():
+def init_power_mask() -> None:
     i = 0
     pwr = 1
     msk = 1
@@ -76,7 +79,7 @@ init_power_mask()
 class CharVec:
     """Characteristic (_not_ character) vector."""
 
-    def __init__(self, b, s):
+    def __init__(self, b: int, s: int) -> None:
         """Initializes from bitmask and size.
 
         Lowest bitmask bit is for leftmost pos (with index 1); all
@@ -86,35 +89,35 @@ class CharVec:
         self.bits = b
         self.size = s
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         assert isinstance(other, CharVec)
 
         return (self.size == other.size) and (self.bits == other.bits)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return (3 + self.bits) * self.size
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "%d: %s" % (self.size, hex(self.bits))
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """Empty (size 0) vector has a limited interface (see below)."""
         return not self.size
 
-    def subrange(self, sz, sh):
+    def subrange(self, sz: int, sh: int) -> CharVec:
         """Returns sz bits of this vector, starting from bit sh."""
         assert (0 <= sz) and (sz <= self.size) and (1 <= sh) and (sh <= self.size + 1)
         return CharVec((self.bits >> (sh - 1)) & power_mask[sz - 1], sz) if sz else CharVec(0, 0)
 
-    def has_first_bit_set(self):
+    def has_first_bit_set(self) -> bool:
         """Has this vector its first bit set?
 
         Returns false for empty vectors (which do not have a first bit
         at all).
         """
-        return self.bits & 1
+        return bool(self.bits & 1)
 
-    def get_index_of_set_bit(self):
+    def get_index_of_set_bit(self) -> int | None:
         """The lowest index (1-based) of a set bit.
 
         Returns None when there isn't any such index. Only callable
@@ -139,27 +142,27 @@ class ReducedUnion:
     positions must be relative to the same boundary.
     """
 
-    def __init__(self):
-        self.pos_list = [] # ordered list of unique RelPos
+    def __init__(self) -> None:
+        self.pos_list: list[RelPos] = [] # ordered list of unique RelPos
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         assert isinstance(other, ReducedUnion)
 
         return self.pos_list == other.pos_list
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash_list(self.pos_list)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.pos_list)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[RelPos]:
         return iter(self.pos_list)
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return not len(self.pos_list)
 
-    def get_raise_level(self):
+    def get_raise_level(self) -> int:
         """The maximum that can be subtracted from this set.
 
         When it returns 0, the set is already in base state and
@@ -170,7 +173,7 @@ class ReducedUnion:
 
         return min((rp.offset for rp in self.pos_list))
 
-    def add(self, rel_pos):
+    def add(self, rel_pos: RelPos) -> None:
         """Add a position, preserving the "no subsumption" invariant.
 
         Caller must ensure the position is relative to the same
@@ -197,7 +200,7 @@ class ReducedUnion:
             else:
                 i += 1
 
-    def add_unchecked(self, rel_pos):
+    def add_unchecked(self, rel_pos: RelPos) -> None:
         """Add a position, not checking the "no subsumption" invariant.
 
         Caller must know the position isn't in the set yet and doesn't
@@ -209,7 +212,7 @@ class ReducedUnion:
         assert rel_pos
         insort_left(self.pos_list, rel_pos)
 
-    def update(self, other):
+    def update(self, other: ReducedUnion) -> None:
         """Add positions from another set.
 
         Caller must ensure both sets are relative to the same boundary.
@@ -219,7 +222,7 @@ class ReducedUnion:
         for rp in other:
             self.add(rp)
 
-    def subtract(self, di):
+    def subtract(self, di: int) -> ReducedUnion:
         """Recompute this set for a higher base."""
         assert (di > 0) and len(self.pos_list)
 
@@ -235,11 +238,11 @@ class Elementary:
 
     Not much of an object - the only state it keeps is n."""
 
-    def __init__(self, n):
+    def __init__(self, n: int) -> None:
         assert n > 0
         self.n = n
 
-    def elem_delta(self, i, w, rel_pos, char_vec):
+    def elem_delta(self, i: int, w: int, rel_pos: RelPos, char_vec: CharVec) -> ReducedUnion:
         """Elementary transition for a position and a characteristic vector.
 
         Note that the position is absolute - caller must supply both
@@ -255,7 +258,7 @@ class Elementary:
         log.debug("loc_char_vec = %s" % loc_char_vec)
         return self.deltaI(rel_pos, loc_char_vec) if rel_pos.edit < self.n else self.deltaII(rel_pos, loc_char_vec)
 
-    def deltaI(self, rel_pos, char_vec):
+    def deltaI(self, rel_pos: RelPos, char_vec: CharVec) -> ReducedUnion:
         """Part I of Table 4.1 of the paper."""
         result = ReducedUnion()
         if char_vec.is_empty():
@@ -281,7 +284,7 @@ class Elementary:
 
         return result
 
-    def deltaII(self, rel_pos, char_vec):
+    def deltaII(self, rel_pos: RelPos, char_vec: CharVec) -> ReducedUnion:
         """Part II of Table 4.1 of the paper."""
         result = ReducedUnion()
         if char_vec.has_first_bit_set():
@@ -289,7 +292,7 @@ class Elementary:
 
         return result
 
-    def get_rel_pos_len(self, i, w, e):
+    def get_rel_pos_len(self, i: int, w: int, e: int) -> int:
         """Length of the relevant subword for the specified position."""
         assert (0 <= i) and (i <= w) and (0 <= e) and (e <= self.n)
         return min(self.n - e + 1, w - i)
@@ -301,12 +304,12 @@ class LevenState:
     empty - the empty (failure) state is represented by None.
     """
 
-    def __init__(self, b, ru):
+    def __init__(self, b: int, ru: ReducedUnion) -> None:
         assert (b >= 0) and ru and not ru.is_empty()
         self.base = b
         self.reduced_union = ru
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "%d: %s" % (self.base, self.reduced_union)
 
 class LazyTable(Elementary):
@@ -317,18 +320,18 @@ class LazyTable(Elementary):
     (because n is bounded) but can be high.
     """
 
-    def __init__(self, n):
+    def __init__(self, n: int) -> None:
         Elementary.__init__(self, n)
         zero = ReducedUnion()
         zero.add_unchecked(RelPos(0, 0))
         # filled lazily, but we'll certainly need the initial position
-        self.state2transition = { zero: {} } # ReducedUnion -> { CharVec -> ReducedUnion }
+        self.state2transition: dict[ReducedUnion, dict[CharVec, ReducedUnion]] = { zero: {} }
 
-    def get_rel_state_len(self, i, w):
+    def get_rel_state_len(self, i: int, w: int) -> int:
         """Length of the relevant subword for the specified boundary."""
         return min(2 * self.n + 1, w - i)
 
-    def make_char_vec(self, sub_word, letter):
+    def make_char_vec(self, sub_word: str, letter: str) -> CharVec:
         """Converts (relevant) sub-word to its characteristic vector."""
         log.debug("enter make_char_vec(\"%s\", '%s')" % (sub_word, letter))
         char_vec = CharVec(0, len(sub_word))
@@ -344,7 +347,7 @@ class LazyTable(Elementary):
         log.debug("exit make_char_vec: %s" % char_vec)
         return char_vec
 
-    def delta(self, pinned_state, w, char_vec):
+    def delta(self, pinned_state: LevenState, w: int, char_vec: CharVec) -> ReducedUnion:
         log.debug("enter LazyTable.delta(%s, %d, %s)" % (pinned_state, w, char_vec))
         i = pinned_state.base
         red_un = pinned_state.reduced_union
@@ -369,9 +372,9 @@ class Facade:
     list of states, for example) - just enough to get matches.
     """
 
-    cache = {} # n -> LazyTable(n)
+    cache: dict[int, LazyTable] = {} # n -> LazyTable(n)
 
-    def __init__(self, word, n):
+    def __init__(self, word: str, n: int) -> None:
         if n <= 0:
             raise Exception("number of corrections must be positive")
 
@@ -388,14 +391,14 @@ class Facade:
 
         self.lazy_table = lazy_table
 
-    def initial_state(self):
+    def initial_state(self) -> LevenState:
         """Provides the initial { 0^#0 }."""
         zero_pos = RelPos(0, 0)
         zero_union = ReducedUnion()
         zero_union.add_unchecked(zero_pos)
         return LevenState(0, zero_union)
 
-    def delta(self, cur_state, letter):
+    def delta(self, cur_state: LevenState, letter: str) -> LevenState | None:
         """State transition."""
         log.debug("enter Facade.delta(%s, %s)" % (cur_state, letter))
         assert cur_state and cur_state.reduced_union.get_raise_level() == 0
@@ -412,7 +415,7 @@ class Facade:
         log.debug("rebased: %d, %s" % (di, cc))
         return LevenState(cur_state.base + di, cc)
 
-    def is_final(self, state):
+    def is_final(self, state: LevenState) -> bool:
         """Final state check."""
         for rp in state.reduced_union:
             i = state.base + rp.offset
@@ -422,5 +425,5 @@ class Facade:
         return False
 
     @property
-    def n(self):
+    def n(self) -> int:
         return self.lazy_table.n

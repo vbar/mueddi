@@ -7,19 +7,22 @@ Construction of Minimal Acyclic Finite-State Automata by Jan Daciuk,
 Stoyan Mihov, Bruce W. Watson and Richard E. Watson.
 """
 
+from __future__ import annotations
+
 import sys
+from typing import Iterable
 from mueddit.struct_hash import hash_dict
 
 class DawgState:
     """Automaton state."""
 
-    def __init__(self, final):
+    def __init__(self, final: bool) -> None:
         self.final = final
-        self.children = {} # letter -> DawgState
-        self.sorted_keys = None
-        self.h = None
+        self.children: dict[str, DawgState] = {} # letter -> DawgState
+        self.sorted_keys: list[str] | None = None
+        self.h: int | None = None
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         assert isinstance(other, DawgState)
 
         if self.final != other.final:
@@ -36,7 +39,7 @@ class DawgState:
 
         return True
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         if self.h is None:
             h = hash_dict(self.children)
             if self.final:
@@ -46,7 +49,7 @@ class DawgState:
 
         return self.h
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = 't' if self.final else 'f'
         s += ' {'
         delim = ' '
@@ -61,29 +64,29 @@ class DawgState:
         s += ' }'
         return s;
 
-    def keys(self):
+    def keys(self) -> list[str]:
         if self.sorted_keys is None:
            self.sorted_keys = sorted(self.children.keys())
 
         return self.sorted_keys
 
-    def has_children(self):
+    def has_children(self) -> bool:
         return len(self.children.keys()) > 0
 
-    def get_child(self, letter):
+    def get_child(self, letter: str) -> DawgState | None:
         return self.children.get(letter)
 
-    def last_child(self):
+    def last_child(self) -> DawgState | None:
         keys = self.keys()
         return self.children[keys[-1]] if keys else None
 
-    def set_last_child(self, child):
+    def set_last_child(self, child: DawgState) -> None:
         self.h = None
         keys = self.keys()
         assert keys
         self.children[keys[-1]] = child
 
-    def add_child(self, letter, child):
+    def add_child(self, letter: str, child: DawgState) -> None:
         self.sorted_keys = None
         self.h = None
         assert letter not in self.children
@@ -92,22 +95,24 @@ class DawgState:
 class Dawg:
     """Directed acyclic word graph used by the main module."""
 
-    def __init__(self, root_final):
+    def __init__(self, root_final: bool) -> None:
         self.root = DawgState(root_final)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Dawg: %s" % self.root
 
-    def accepts(self, w):
+    def accepts(self, w: str) -> bool:
         state = self.root
         for ch in w:
-            state = state.get_child(ch)
-            if not state:
+            next_state = state.get_child(ch)
+            if not next_state:
                 return False
+
+            state = next_state
 
         return state.final
 
-    def track_prefix(self, word):
+    def track_prefix(self, word: str) -> tuple[str, DawgState]:
         prefix = ""
         next_state = self.root
         prev_state = next_state # for empty word
@@ -116,10 +121,11 @@ class Dawg:
         while i < l:
             ch = word[i]
             prev_state = next_state
-            next_state = prev_state.get_child(ch)
-            if not next_state:
+            found_state = prev_state.get_child(ch)
+            if not found_state:
                 break
             else:
+                next_state = found_state
                 prefix += ch
 
             i += 1
@@ -134,11 +140,11 @@ class Builder:
     when that function returns.
     """
 
-    def __init__(self, root_final):
+    def __init__(self, root_final: bool) -> None:
         self.dawg = Dawg(root_final)
-        self.register = {} # DawgState => (identical) DawgState
+        self.register: dict[DawgState, DawgState] = {} # DawgState => (identical) DawgState
 
-    def build(self, words):
+    def build(self, words: Iterable[str]) -> None:
         for word in words:
             common_prefix, last_state = self.dawg.track_prefix(word)
             current_suffix = word[len(common_prefix):]
@@ -149,7 +155,7 @@ class Builder:
 
         self.replace_or_register(self.dawg.root)
 
-    def replace_or_register(self, state):
+    def replace_or_register(self, state: DawgState) -> None:
         assert state
         child = state.last_child()
         if child:
@@ -162,7 +168,7 @@ class Builder:
             else:
                 self.register[child] = child
 
-    def add_suffix(self, state, suffix):
+    def add_suffix(self, state: DawgState, suffix: str) -> None:
         assert state
         prev_state = state
         next_state = None
@@ -175,13 +181,13 @@ class Builder:
             prev_state = next_state
             i += 1
 
-def make_dawg(words):
+def make_dawg(words: Iterable[str]) -> Dawg:
     """Directed acyclic word graph factory."""
     builder = Builder("" in words)
     builder.build(sorted(words))
     return builder.dawg
 
-def main():
+def main() -> None:
     if len(sys.argv) == 1:
         raise Exception("no words")
 

@@ -5,8 +5,11 @@
 Also contains main function for command-line use.
 """
 
-from mueddit.dawg import make_dawg
+from __future__ import annotations
+
+from mueddit.dawg import Dawg, make_dawg
 from mueddit.leven import Facade
+from typing import Iterator as TypingIterator
 import argparse
 import logging
 
@@ -21,12 +24,12 @@ class Iterator:
     """
     log = logging.getLogger('mueddi')
 
-    def __init__(self, seen, n, dawg):
+    def __init__(self, seen: str, n: int, dawg: Dawg) -> None:
         assert dawg
         self.dawg = dawg
         self.facade = Facade(seen, n)
 
-    def __iter__(self):
+    def __iter__(self) -> TypingIterator[str]:
         # stack would also work, but FIFO seems more natural here (if
         # perhaps marginally less efficient)
         queue = [ ("", self.dawg.root, self.facade.initial_state()) ]
@@ -45,7 +48,7 @@ class Iterator:
                     self.log.info("push \"%s\",, %s" % (v1, mp))
                     queue.append((v1, q1, mp))
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description='MUlti-word EDit DIstance')
     parser.add_argument('--log', '-l', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], help='logging level')
     parser.add_argument('--seen', '-s', required=True, help='seen word')
